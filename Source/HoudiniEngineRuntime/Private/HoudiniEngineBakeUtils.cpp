@@ -58,6 +58,13 @@
     #include "InstancedFoliage.h"
     #include "InstancedFoliageActor.h"
     #include "Layers/LayersSubsystem.h"
+
+	#include "LandscapeInfo.h"
+	#include "Engine/WorldComposition.h"
+	#include "WorldBrowserModule.h"
+	#include "LevelCollectionModel.h"
+	#include "Templates/SharedPointer.h"
+
 #endif
 #include "EngineUtils.h"
 #include "UObject/MetaData.h"
@@ -73,6 +80,11 @@
         #undef GetGeoInfo
     #endif
 #endif
+
+
+
+
+
 
 #define LOCTEXT_NAMESPACE HOUDINI_LOCTEXT_NAMESPACE 
 
@@ -1428,6 +1440,75 @@ FHoudiniEngineBakeUtils::BakeLandscape( UHoudiniAssetComponent* HoudiniAssetComp
 #else
     return false;
 #endif
+}
+
+bool FHoudiniEngineBakeUtils::TiledBakeLandScape(UHoudiniAssetComponent* HoudiniAssetComponent, class ALandscapeProxy* OnlyBakeThisLandscape) {
+#if WITH_EDITOR
+
+
+	//ULandscapeInfo* LandscapeInfo = OnlyBakeThisLandscape->GetLandscapeInfo();
+	//check(LandscapeInfo);
+	//ALandscape* Landscape = LandscapeInfo->LandscapeActor.Get();
+	//check(Landscape);
+
+	//Landscape->Modify();
+	//LandscapeInfo->Modify();
+
+
+	//LandscapeInfo->GetComponentsInRegion(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1, SelectedComponents);
+
+
+	//UWorld* World = getviewport->GetScene()->GetWorld();
+
+	//TSet<ALandscapeProxy*> SelectProxies;
+	//TSet<ULandscapeComponent*> TargetSelectedComponents;
+	//TArray<ULandscapeHeightfieldCollisionComponent*> TargetSelectedCollisionComponents;
+	//for (ULandscapeComponent* Component : SelectedComponents)
+	//{
+	//	SelectProxies.Add(Component->GetLandscapeProxy());
+	//	if (Component->GetLandscapeProxy()->GetOuter() != World->GetCurrentLevel())
+	//	{
+	//		TargetSelectedComponents.Add(Component);
+	//	}
+
+	//	ULandscapeHeightfieldCollisionComponent* CollisionComp = Component->CollisionComponent.Get();
+	//	SelectProxies.Add(CollisionComp->GetLandscapeProxy());
+	//	if (CollisionComp->GetLandscapeProxy()->GetOuter() != World->GetCurrentLevel())
+	//	{
+	//		TargetSelectedCollisionComponents.Add(CollisionComp);
+	//	}
+	//}
+
+	return true;
+#else
+	return false;
+#endif
+}
+
+ULevel* FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath) {
+	UWorld* NewGWorld = UWorld::CreateWorld(EWorldType::None, false);
+	ULevel* CurLevel = nullptr;
+	check(NewGWorld);
+
+	// Save new empty level
+	bool bSaved = FEditorFileUtils::SaveLevel(NewGWorld->PersistentLevel, SavePath);
+
+	UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
+	FWorldBrowserModule& WorldBrowserModule = FModuleManager::GetModuleChecked<FWorldBrowserModule>("WorldBrowser");
+	TSharedPtr<FLevelCollectionModel> WorldModel = WorldBrowserModule.SharedWorldModel(EditorWorld);
+
+	// Update levels list
+	if (bSaved)
+	{
+		WorldModel->PopulateLevelsList();
+		TSharedPtr<FLevelModel> NewLevelModel = WorldModel->FindLevelModel(NewGWorld->GetOutermost()->GetFName());
+		CurLevel = NewLevelModel->GetLevelObject();
+	}
+
+	// Destroy the new world we created and collect the garbage
+	NewGWorld->DestroyWorld(false);
+	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+	return CurLevel;
 }
 
 UPackage *

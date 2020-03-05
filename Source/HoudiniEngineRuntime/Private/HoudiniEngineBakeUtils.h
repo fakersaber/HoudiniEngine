@@ -151,6 +151,13 @@ public:
         UHoudiniAssetComponent* HoudiniAssetComponent, 
         class ALandscapeProxy * OnlyBakeThisLandscape = nullptr );
 
+
+	//YJH Created 2020/3/5
+	static bool TiledBakeLandScape(UHoudiniAssetComponent* HoudiniAssetComponent, class ALandscapeProxy * OnlyBakeThisLandscape);
+
+	static ULevel* CreateTiledLevel(const FString& SavePath);
+
+
     /** Create a package for a given component for material. **/
     static UPackage * BakeCreateMaterialPackageForComponent(
         FHoudiniCookParams& HoudiniCookParams,

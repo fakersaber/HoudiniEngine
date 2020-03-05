@@ -57,7 +57,9 @@
 #include "Internationalization/Internationalization.h"
 #include "DetailLayoutBuilder.h"
 #include "IDetailGroup.h"
-
+#include "FileHelpers.h"
+#include "LandscapeProxy.h"
+#include "Engine/WorldComposition.h"
 
 #define LOCTEXT_NAMESPACE HOUDINI_LOCTEXT_NAMESPACE 
 
@@ -639,9 +641,9 @@ FHoudiniAssetComponentDetails::CreateStaticMeshAndMaterialWidgets( IDetailCatego
 							SNew(SButton)
 							.VAlign(VAlign_Center)
 							.HAlign(HAlign_Center)
-							.Text(LOCTEXT("Bake", "Bake"))
-							.OnClicked(this, &FHoudiniAssetComponentDetails::OnBakeLandscape, Landscape, HoudiniAssetComponent)
-							.ToolTipText(LOCTEXT("HoudiniLandscapeBakeButton", "Bake this landscape"))
+							.Text(LOCTEXT("TiledBake", "Tiled Bake"))
+							.OnClicked(this, &FHoudiniAssetComponentDetails::OnTiledBakeLandscape, Landscape, HoudiniAssetComponent)
+							.ToolTipText(LOCTEXT("HoudiniLandscapeTiledBakeButton", "Tiled Bake this landscape"))
 						]
                     ]
                 ]
@@ -1342,6 +1344,31 @@ FHoudiniAssetComponentDetails::OnBakeLandscape(ALandscapeProxy * Landscape, UHou
 
     return FReply::Handled();
 }
+
+
+FReply FHoudiniAssetComponentDetails::OnTiledBakeLandscape(ALandscapeProxy* Landscape, UHoudiniAssetComponent* HoudiniAssetComponent) {
+	if (!HoudiniAssetComponent || HoudiniAssetComponent->IsPendingKill() || !Landscape || Landscape->IsPendingKill())
+		return FReply::Handled();
+
+	UWorld* World = Landscape->GetWorld();
+	check(World);
+
+	UWorldComposition* WorldComposition = World->WorldComposition;
+	check(WorldComposition);
+
+	FString WorldRootPath = FPackageName::LongPackageNameToFilename(WorldComposition->GetWorldRoot());
+
+	int index = 0;
+	for (int x = 0; x < 2; ++x) {
+		for (int y = 0; y < 2; ++y) {
+			FString LevelPath = WorldRootPath + L"TestMap" + FString::FromInt(index++) + FPackageName::GetMapPackageExtension();
+			FHoudiniEngineBakeUtils::CreateTiledLevel(LevelPath);
+		}
+	}
+
+	return FReply::Handled();
+}
+
 
 FReply
 FHoudiniAssetComponentDetails::OnBakeAllGeneratedMeshes()

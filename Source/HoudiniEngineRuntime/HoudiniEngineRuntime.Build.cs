@@ -254,7 +254,8 @@ public class HoudiniEngineRuntime : ModuleRules
 
         PrivateIncludePaths.AddRange(
             new string[] {
-                "HoudiniEngineRuntime/Private"
+                "HoudiniEngineRuntime/Private",
+                "../../../../Source/Editor/WorldBrowser/Private"
             }
         );
 
@@ -269,7 +270,7 @@ public class HoudiniEngineRuntime : ModuleRules
                 "InputCore",
                 "RHI",
                 "Foliage",
-                "Landscape"
+                "Landscape",
              }
         );
 
@@ -301,7 +302,8 @@ public class HoudiniEngineRuntime : ModuleRules
                     "TargetPlatform",
                     "UnrealEd",
                     "ApplicationCore",
-                    "LandscapeEditor"
+                    "LandscapeEditor",
+                    "WorldBrowser"
                 }
             );
         }
