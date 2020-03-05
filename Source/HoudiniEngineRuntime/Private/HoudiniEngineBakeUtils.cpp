@@ -1493,16 +1493,17 @@ ULevel* FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath) {
 	// Save new empty level
 	bool bSaved = FEditorFileUtils::SaveLevel(NewGWorld->PersistentLevel, SavePath);
 
-	UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
-	FWorldBrowserModule& WorldBrowserModule = FModuleManager::GetModuleChecked<FWorldBrowserModule>("WorldBrowser");
-	TSharedPtr<FLevelCollectionModel> WorldModel = WorldBrowserModule.SharedWorldModel(EditorWorld);
+	//UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
+	//FWorldBrowserModule& WorldBrowserModule = FModuleManager::GetModuleChecked<FWorldBrowserModule>("WorldBrowser");
+	//TSharedPtr<FLevelCollectionModel> WorldModel = WorldBrowserModule.SharedWorldModel(EditorWorld);
 
 	// Update levels list
 	if (bSaved)
 	{
-		WorldModel->PopulateLevelsList();
-		TSharedPtr<FLevelModel> NewLevelModel = WorldModel->FindLevelModel(NewGWorld->GetOutermost()->GetFName());
-		CurLevel = NewLevelModel->GetLevelObject();
+		CurLevel = NewGWorld->PersistentLevel;
+		//WorldModel->PopulateLevelsList();
+		//TSharedPtr<FLevelModel> NewLevelModel = WorldModel->FindLevelModel(NewGWorld->GetOutermost()->GetFName());
+		//CurLevel = NewLevelModel->GetLevelObject();
 	}
 
 	// Destroy the new world we created and collect the garbage
