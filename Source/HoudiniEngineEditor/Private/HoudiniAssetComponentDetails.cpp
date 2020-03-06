@@ -1346,11 +1346,11 @@ FHoudiniAssetComponentDetails::OnBakeLandscape(ALandscapeProxy * Landscape, UHou
 }
 
 
-FReply FHoudiniAssetComponentDetails::OnTiledBakeLandscape(ALandscapeProxy* Landscape, UHoudiniAssetComponent* HoudiniAssetComponent) {
-	if (!HoudiniAssetComponent || HoudiniAssetComponent->IsPendingKill() || !Landscape || Landscape->IsPendingKill())
+FReply FHoudiniAssetComponentDetails::OnTiledBakeLandscape(ALandscapeProxy* LandscapeProx, UHoudiniAssetComponent* HoudiniAssetComponent) {
+	if (!HoudiniAssetComponent || HoudiniAssetComponent->IsPendingKill() || !LandscapeProx || LandscapeProx->IsPendingKill())
 		return FReply::Handled();
 
-	UWorld* World = Landscape->GetWorld();
+	UWorld* World = LandscapeProx->GetWorld();
 	check(World);
 
 	UWorldComposition* WorldComposition = World->WorldComposition;
@@ -1362,7 +1362,7 @@ FReply FHoudiniAssetComponentDetails::OnTiledBakeLandscape(ALandscapeProxy* Land
 	for (int x = 0; x < 2; ++x) {
 		for (int y = 0; y < 2; ++y) {
 			FString LevelPath = WorldRootPath + L"TestMap" + FString::FromInt(index++) + FPackageName::GetMapPackageExtension();
-			FHoudiniEngineBakeUtils::CreateTiledLevel(LevelPath);
+			FHoudiniEngineBakeUtils::CreateTiledLevel(LevelPath, LandscapeProx);
 		}
 	}
 

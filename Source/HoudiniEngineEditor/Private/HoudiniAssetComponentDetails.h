@@ -111,7 +111,7 @@ class FHoudiniAssetComponentDetails : public IDetailCustomization
 
 
 		//YJH Created
-		FReply OnTiledBakeLandscape(ALandscapeProxy* Landscape, UHoudiniAssetComponent* HoudiniAssetComponent);
+		FReply OnTiledBakeLandscape(ALandscapeProxy* LandscapeProx, UHoudiniAssetComponent* HoudiniAssetComponent);
 
 
         /** Handler for bake all static meshes action. **/

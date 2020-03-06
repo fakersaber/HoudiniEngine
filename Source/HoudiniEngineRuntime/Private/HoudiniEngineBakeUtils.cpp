@@ -1485,7 +1485,7 @@ bool FHoudiniEngineBakeUtils::TiledBakeLandScape(UHoudiniAssetComponent* Houdini
 #endif
 }
 
-ULevel* FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath) {
+ULevel* FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath, ALandscapeProxy* LandscapeProx) {
 	UWorld* NewGWorld = UWorld::CreateWorld(EWorldType::None, false);
 	ULevel* CurLevel = nullptr;
 	check(NewGWorld);
@@ -1496,14 +1496,27 @@ ULevel* FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath) {
 	//UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
 	//FWorldBrowserModule& WorldBrowserModule = FModuleManager::GetModuleChecked<FWorldBrowserModule>("WorldBrowser");
 	//TSharedPtr<FLevelCollectionModel> WorldModel = WorldBrowserModule.SharedWorldModel(EditorWorld);
+	//WorldModel->PopulateLevelsList();
+	//TSharedPtr<FLevelModel> NewLevelModel = WorldModel->FindLevelModel(NewGWorld->GetOutermost()->GetFName());
+	//CurLevel = NewLevelModel->GetLevelObject();
 
 	// Update levels list
-	if (bSaved)
-	{
-		CurLevel = NewGWorld->PersistentLevel;
-		//WorldModel->PopulateLevelsList();
-		//TSharedPtr<FLevelModel> NewLevelModel = WorldModel->FindLevelModel(NewGWorld->GetOutermost()->GetFName());
-		//CurLevel = NewLevelModel->GetLevelObject();
+	if (bSaved){		
+		ULandscapeInfo* LandScapeInfo = LandscapeProx->GetLandscapeInfo();
+		check(LandScapeInfo);
+
+		ALandscape* Landscape = LandScapeInfo ? LandScapeInfo->LandscapeActor.Get() : nullptr;
+		check(Landscape);
+
+		Landscape->Modify();
+		LandScapeInfo->Modify();
+		
+		//获取需要处理的Components
+		TSet<ULandscapeComponent*>  SelectedComponents;
+		LandScapeInfo->GetComponentsInRegion(0, 0, 1, 1, SelectedComponents);
+
+		FIntPoint MaxComponentIndex =  Landscape->ComputeComponentCounts();
+		
 	}
 
 	// Destroy the new world we created and collect the garbage

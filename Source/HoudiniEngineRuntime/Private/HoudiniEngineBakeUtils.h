@@ -155,7 +155,7 @@ public:
 	//YJH Created 2020/3/5
 	static bool TiledBakeLandScape(UHoudiniAssetComponent* HoudiniAssetComponent, class ALandscapeProxy * OnlyBakeThisLandscape);
 
-	static ULevel* CreateTiledLevel(const FString& SavePath);
+	static ULevel* CreateTiledLevel(const FString& SavePath, class ALandscapeProxy* LandscapeProx);
 
 
     /** Create a package for a given component for material. **/
