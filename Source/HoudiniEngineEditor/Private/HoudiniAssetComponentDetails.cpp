@@ -1350,19 +1350,41 @@ FReply FHoudiniAssetComponentDetails::OnTiledBakeLandscape(ALandscapeProxy* Land
 	if (!HoudiniAssetComponent || HoudiniAssetComponent->IsPendingKill() || !LandscapeProx || LandscapeProx->IsPendingKill())
 		return FReply::Handled();
 
+	static const uint8 TileToXSize = 2;
+	static const uint8 TileToYSize = 2;
+
 	UWorld* World = LandscapeProx->GetWorld();
 	check(World);
 
 	UWorldComposition* WorldComposition = World->WorldComposition;
 	check(WorldComposition);
 
+
+	ALandscape* LandScapeActor = LandscapeProx->GetLandscapeActor();
+	check(LandScapeActor)
+
+	FIntPoint MaxComponentCount = LandScapeActor->ComputeComponentCounts();
+
+	uint32 XComponentSize = MaxComponentCount.X / TileToXSize;
+	uint32 YComponentSize = MaxComponentCount.Y / TileToYSize;
+
+
 	FString WorldRootPath = FPackageName::LongPackageNameToFilename(WorldComposition->GetWorldRoot());
 
 	int index = 0;
-	for (int x = 0; x < 2; ++x) {
-		for (int y = 0; y < 2; ++y) {
+	for (int CurXSize = 0; CurXSize < TileToXSize; ++CurXSize) {
+		for (int CurYSize = 0; CurYSize < TileToYSize; ++CurYSize) {
 			FString LevelPath = WorldRootPath + L"TestMap" + FString::FromInt(index++) + FPackageName::GetMapPackageExtension();
-			FHoudiniEngineBakeUtils::CreateTiledLevel(LevelPath, LandscapeProx);
+			
+			uint32 StartXIndex = CurXSize * XComponentSize;
+			uint32 EndXIndex = CurXSize * XComponentSize + XComponentSize - 1; //Index从0开始，XYtoComponentMap也是从0计算Index
+			uint32 StartYIndex = CurYSize * YComponentSize;
+			uint32 EndYIndex = CurYSize * YComponentSize + YComponentSize - 1;
+
+			FName LevelPackageName = FHoudiniEngineBakeUtils::CreateTiledLevel(LevelPath, LandscapeProx,StartXIndex,EndXIndex,StartYIndex,EndYIndex);
+
+			FHoudiniEngineBakeUtils::MoveLandscapeToNewLevel(LevelPackageName, LandscapeProx, StartXIndex, EndXIndex, StartYIndex, EndYIndex);
+
 		}
 	}
 
