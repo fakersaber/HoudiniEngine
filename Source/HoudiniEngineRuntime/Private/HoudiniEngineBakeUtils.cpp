@@ -1500,7 +1500,7 @@ bool FHoudiniEngineBakeUtils::TiledBakeLandScape(UHoudiniAssetComponent* Houdini
 #endif
 }
 
-FName FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath, class ALandscapeProxy* LandscapeProx, uint32 StartXIndex, uint32 EndXIndex, uint32 StartYIndex, uint32 EndYIndex)
+FName FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath)
 {
 	UWorld* NewGWorld = UWorld::CreateWorld(EWorldType::None, false);
 	ULevel* CurLevel = nullptr;
@@ -1520,12 +1520,6 @@ FName FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath, class A
 	// Update levels list
 	if (bSaved) {
 		WorlTiledModel->PopulateLevelsList();
-
-		//TSharedPtr<FWorldTileModel> NewTileModel = StaticCastSharedPtr<FWorldTileModel>(WorlTiledModel->FindLevelModel(LevelPackageName));
-
-		//FIntVector offset(LandscapeProx->ComponentSizeQuads * 100, LandscapeProx->ComponentSizeQuads * 100, 0);
-
-		//NewTileModel->SetLevelPosition(offset);
 	}
 
 	// Destroy the new world we created and collect the garbage
@@ -1538,6 +1532,7 @@ FName FHoudiniEngineBakeUtils::CreateTiledLevel(const FString& SavePath, class A
 
 ALandscapeProxy* FHoudiniEngineBakeUtils::MoveLandscapeToNewLevel(const FName& PackageName,class ALandscapeProxy* LandscapeProx, uint32 StartXIndex, uint32 EndXIndex, uint32 StartYIndex, uint32 EndYIndex) {
 
+	//重复加载模块的原因是因为不想让HoudiniEditor模块加载WorldBrowser模块
 	FWorldBrowserModule& WorldBrowserModule = FModuleManager::LoadModuleChecked<FWorldBrowserModule>(FName("WorldBrowser"));
 	UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
 	TSharedPtr<FWorldTileCollectionModel> WorlTiledModel = StaticCastSharedPtr<FWorldTileCollectionModel>(WorldBrowserModule.SharedWorldModel(EditorWorld));
@@ -1590,10 +1585,8 @@ ALandscapeProxy* FHoudiniEngineBakeUtils::MoveLandscapeToNewLevel(const FName& P
 	//更新被裁掉的高度图
 	//存在情况，Neighbor是同一张HeightiMap但是不在ToBeMoveComponents容器中？ 存在
 	TMap<ULandscapeComponent*, bool> HeightmapUpdateComponents;
-	HeightmapUpdateComponents.Reserve(ToBeMoveComponents.Num() * 4); //最坏情况下包括自身？
+	HeightmapUpdateComponents.Reserve(ToBeMoveComponents.Num() * 4); //对于每一个需要移动的Component，最多更新所有相邻的HeightMap,即上下左右4个
 	for (auto Component : ToBeMoveComponents) {
-		//这里有大量可优化的地方，先不管了后面再说
-
 		int HeightMapX = Component->GetHeightmap()->Source.GetSizeX();
 		const int32 SearchX = HeightMapX / NeedHeightMapSize - 1;
 		int HeightMapY = Component->GetHeightmap()->Source.GetSizeY();
@@ -1624,7 +1617,6 @@ ALandscapeProxy* FHoudiniEngineBakeUtils::MoveLandscapeToNewLevel(const FName& P
 	auto Position = FirstComponent->GetComponentLocation();
 	auto Rotation = FirstComponent->GetComponentRotation();
 	NewLandscapeProx->GetRootComponent()->SetWorldLocationAndRotation(Position, Rotation);
-	//!!!!!!!!!!!!设置Offset!!!!!!!!!!!!
 	NewLandscapeProx->LandscapeSectionOffset = FirstComponent->GetSectionBase();
 
 	if (!NewLandscapeProx->GetLevel()->bIsVisible) {
@@ -1743,6 +1735,10 @@ ALandscapeProxy* FHoudiniEngineBakeUtils::MoveLandscapeToNewLevel(const FName& P
 	FString SvaePath = FPackageName::LongPackageNameToFilename(PackageName.ToString()) + FPackageName::GetMapPackageExtension();
 
 	FEditorFileUtils::SaveLevel(NewTileModel->GetLevelObject(), SvaePath);
+
+	TSharedPtr<FWorldTileModel> PersistenLevelTileModel = StaticCastSharedPtr<FWorldTileModel>(WorlTiledModel->FindLevelModel(OriginWorld->PersistentLevel));
+
+	PersistenLevelTileModel->MakeLevelCurrent();
 
 	return NewLandscapeProx;
 }

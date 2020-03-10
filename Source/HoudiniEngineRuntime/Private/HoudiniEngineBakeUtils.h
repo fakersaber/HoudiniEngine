@@ -155,7 +155,7 @@ public:
 	//YJH Created 2020/3/5
 	static bool TiledBakeLandScape(UHoudiniAssetComponent* HoudiniAssetComponent, class ALandscapeProxy * OnlyBakeThisLandscape);
 
-	static FName CreateTiledLevel(const FString& SavePath, class ALandscapeProxy* LandscapeProx, uint32 StartXIndex, uint32 EndXIndex, uint32 StartYIndex, uint32 EndYIndex);
+	static FName CreateTiledLevel(const FString& SavePath);
 
 	static void SplitHeightmap(class ULandscapeComponent* Comp,class ALandscapeProxy* TargetProxy = nullptr, class FMaterialUpdateContext* InOutUpdateContext = nullptr, TArray<class FComponentRecreateRenderStateContext>* InOutRecreateRenderStateContext = nullptr, bool InReregisterComponent = true);
 
